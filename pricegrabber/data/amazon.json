@@ -1,0 +1,24 @@
+[
+		{"name": "amazon",
+		 "url_regex": ".*(\\.|/)amazon.[^/.]*/.*",
+		 "get_rule": {
+				 "type": "fallthrough",
+				 "children": [
+						 {"type": "xpath",
+							"xpath": "//span[@id=\"price_inside_buybox\"]"
+						 },
+						 {"type": "xpath",
+							"xpath": "//span[@id=\"newBuyBoxPrice\"]"
+						 }
+				 ]
+		 },
+		 "tests": [
+				 {"url": "https://www.amazon.de/dp/B0091CWQBE/ref=cm_sw_em_r_mt_dp_U_2v8hCbB2PN554",
+					"number-of-prices": 1,
+					"price-min": 0,
+					"price-max": 200,
+					"currency": "€"
+				 }
+			]
+		}
+]
