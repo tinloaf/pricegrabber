@@ -13,7 +13,7 @@ setup(name='pricegrabber',
       long_description=long_description,
       long_description_content_type="text/markdown",
       license='MIT',
-      url='',
+      url='https://github.com/tinloaf/pricegrabber',
       packages=find_packages(),
       classifiers=[
           "Programming Language :: Python :: 3",
@@ -27,4 +27,7 @@ setup(name='pricegrabber',
       install_requires=[
           'requests>=2.21.0',
           'lxml>=4.2.5'
-      ])
+      ],
+      keywords='library prices scraping',
+
+      )
