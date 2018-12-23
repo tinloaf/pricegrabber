@@ -1,0 +1,80 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Welcome to Pricegrabber’s documentation! &#8212; Pricegrabber 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="#">
+          <span>Pricegrabber 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>Welcome to Pricegrabber’s documentation!</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="welcome-to-pricegrabber-s-documentation">
+<h1>Welcome to Pricegrabber’s documentation!<a class="headerlink" href="#welcome-to-pricegrabber-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>This is a Python package to retrieve prices for specific products from all sorts of websites, such as Amazon, Aliexpress, or price comparison websites. See <a class="reference internal" href="sites.html#sites"><span class="std std-ref">the full list of supported sites</span></a>.</p>
+<p>New websites can be supported by means of a simple configuration entry. Currently supported sites include:</p>
+<ul class="simple">
+<li>Amazon.{de, com, co.uk, probably all)</li>
+<li>Aliexpress.com</li>
+<li>… and some more. <a class="reference internal" href="sites.html#sites"><span class="std std-ref">See the full list.</span></a></li>
+</ul>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Usage is pretty simple. Mostly you should be able to put in an URL to the site of a product you’re interested in, and you should get out a price (or a list of prices). Here is an Example for an AliExpress product:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pricegrabber</span> <span class="kn">import</span> <span class="n">Grabber</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cfg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://de.aliexpress.com/store/product/Cherry-cherry-shaft-shaft-mx-mechanical-keyboard-shaft-switch-black-shaft-tea-shaft-white-shaft-green/2230037_32682571027.html?spm=a2g0x.12010612.8148356.2.75987786TNUZUO&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">Grabber</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">grab</span><span class="p">()</span>
+<span class="go">[(8.9, &#39;$&#39;)]</span>
+</pre></div>
+</div>
+<p>So in this case we know that the pack of Cherry MX key switches from AliExpress costs $8,90. Note that a list is returned. Some sites may report multiple prices instead of just one. For more details, refer to the <a class="reference internal" href="api.html#api"><span class="std std-ref">API documentation</span></a>.</p>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Lukas Barth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+  </body>
+</html>
