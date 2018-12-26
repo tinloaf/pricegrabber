@@ -1,4 +1,8 @@
+"""Utility class for pricegrabber."""
+
+
 class Singleton(type):
+    """Utility class to serve as metaclass for a singleton."""
     _instances = {}
 
     def __call__(cls, *args, **kwargs):

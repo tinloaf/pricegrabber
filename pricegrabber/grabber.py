@@ -1,13 +1,15 @@
+"""The Grabber is the main class to scrape prices."""
+
+import logging
+import re
+import requests
+from lxml import html
+
 from .siteconfig import SiteConfigRepo
 from .exceptions import NetworkException, ConfigException
 
-import logging
-import requests
-from lxml import html
-import re
-
-logger = logging.getLogger(__name__)
-elements_logger = logging.getLogger(__name__ + '.elements')
+LOGGER = logging.getLogger(__name__)
+ELEMENTS_LOGGER = logging.getLogger(__name__ + '.elements')
 
 
 def _make_simple_currency_getters(currencies):
@@ -31,7 +33,9 @@ class Grabber(object):
     def __init__(self, config):
         """Create a new Grabber.
 
-        You must supply a `config` dictionary. This dictionary *must* contain the key 'url'. From that URL, the Grabber will try to scrape prices."""
+        You must supply a `config` dictionary. This dictionary *must*
+        contain the key 'url'. From that URL, the Grabber will try to
+        scrape prices."""
 
         self._cfg = config
 
@@ -50,11 +54,11 @@ class Grabber(object):
         # Resolve the URL once to figure out redirects
         redirected_url = None
         try:
-            page_content = requests.get(self._cfg['url'], headers={
-                                        "User-Agent": "PriGra v.0.0.1"})
+            page_content = requests.get(self._cfg['url'],
+                                        headers={"User-Agent": "PriGra v.0.0.1"})
             redirected_url = page_content.url
-        except:
-            logger.error("Could not fetch {} to determine site configs!")
+        except Exception:
+            LOGGER.error("Could not fetch {} to determine site configs!")
 
         config_repo = SiteConfigRepo()
         for site_config in config_repo.get_configs():
@@ -65,16 +69,16 @@ class Grabber(object):
             if not url_regex:
                 self._site_configs.append(site_config)
             else:
-                m = url_regex.match(self._cfg['url'])
-                if m:
+                match = url_regex.match(self._cfg['url'])
+                if match:
                     self._site_configs.append(site_config)
                 else:
-                    m = url_regex.match(redirected_url)
-                    if m:
+                    match = url_regex.match(redirected_url)
+                    if match:
                         self._site_configs.append(site_config)
 
     def _get_price(self, text, site_config):
-        logger.debug(" --> Parsing price from '{}'".format(text))
+        LOGGER.debug(" --> Parsing price from '%s'", text)
         value_getters = Grabber.DEFAULT_VALUE_GETTERS
         if site_config.get_value_getters():
             value_getters = site_config.get_value_getters()
@@ -82,17 +86,17 @@ class Grabber(object):
         longest_converted_val = None
         longest_converted_length = 0
         for (value_re, value_func) in value_getters:
-            elements_logger.debug(" ---> Trying {}".format(value_re.pattern))
-            m = value_re.search(text)
-            if not m:
-                elements_logger.debug(" ----> No Match.")
+            ELEMENTS_LOGGER.debug(" ---> Trying %s", value_re.pattern)
+            match = value_re.search(text)
+            if not match:
+                ELEMENTS_LOGGER.debug(" ----> No Match.")
                 continue
             try:
-                elements_logger.debug(
-                    " ----> Success. Match group: {}".format(m.group(0)))
-                if len(m.group(0)) > longest_converted_length:
-                    longest_converted_val = value_func(m.group(0))
-                    longest_converted_length = len(m.group(0))
+                ELEMENTS_LOGGER.debug(
+                    " ----> Success. Match group: %s", match.group(0))
+                if len(match.group(0)) > longest_converted_length:
+                    longest_converted_val = value_func(match.group(0))
+                    longest_converted_length = len(match.group(0))
             except ValueError:
                 pass
 
@@ -107,23 +111,23 @@ class Grabber(object):
             currency_getters = site_config.get_currency_getters()
 
         for (currency_re, currency_symbol) in currency_getters:
-            m = currency_re.search(text)
-            if m:
+            match = currency_re.search(text)
+            if match:
                 return currency_symbol
 
         return None
 
     def _get_by_xpath(self, tree, scfg):
         potential_prices = []
-        elements_logger.debug("Getting by XPath {}".format(scfg.get_xpath()))
+        ELEMENTS_LOGGER.debug("Getting by XPath '%s'", scfg.get_xpath())
 
         elements = tree.xpath(scfg.get_xpath())
-        elements_logger.debug(
-            " -> XPath produced {} elements".format(len(elements)))
-        for el in elements:
-            price = self._get_price(el.text_content(), scfg)
+        ELEMENTS_LOGGER.debug(
+            " -> XPath produced %s elements", len(elements))
+        for element in elements:
+            price = self._get_price(element.text_content(), scfg)
             if price:
-                currency = self._get_currency(el.text_content(), scfg)
+                currency = self._get_currency(element.text_content(), scfg)
                 potential_prices.append((price, currency))
 
         return potential_prices
@@ -131,7 +135,7 @@ class Grabber(object):
     def _get_elements_by_xpath(self, tree, rule):
         xpath = rule.get('xpath')
 
-        elements_logger.debug("Getting elements by XPath {}".format(xpath))
+        ELEMENTS_LOGGER.debug("Getting elements by XPath '%s'", xpath)
 
         if not xpath:
             raise ConfigException(
@@ -139,7 +143,7 @@ class Grabber(object):
         return tree.xpath(xpath)
 
     def _get_elements_by_fallthrough(self, tree, rule):
-        elements_logger.debug("Getting by fallthrough")
+        ELEMENTS_LOGGER.debug("Getting by fallthrough")
 
         children = rule.get('children', [])
         for child in children:
@@ -169,10 +173,10 @@ class Grabber(object):
         elements = self._get_elements_by_rule(tree, rule)
 
         potential_prices = []
-        for el in elements:
-            price = self._get_price(el.text_content(), scfg)
+        for element in elements:
+            price = self._get_price(element.text_content(), scfg)
             if price:
-                currency = self._get_currency(el.text_content(), scfg)
+                currency = self._get_currency(element.text_content(), scfg)
                 potential_prices.append((price, currency))
 
         return potential_prices
@@ -180,9 +184,12 @@ class Grabber(object):
     def grab(self, save_retrieved_page_at=None):
         """Scrape and return prices.
 
-        Returns a list of all found prices. Every item in the list is a pair of price and currency.
+        Returns a list of all found prices. Every item in the list is a
+        pair of price and currency.
 
-        If you set the optional `save_retrieved_page_at`, the page accessed (last) during the grab will be saved to the respective location. Use this only for debugging purposes.
+        If you set the optional `save_retrieved_page_at`, the page accessed
+        (last) during the grab will be saved to the respective location.
+        Use this only for debugging purposes.
         """
 
         try:
@@ -194,12 +201,12 @@ class Grabber(object):
                 with open(save_retrieved_page_at, "w") as page_output_file:
                     page_output_file.write(
                         page_content.content.decode('utf-8'))
-        except requests.exceptions.ConnectionError as e:
-            raise NetworkException("Connection Error: {}".format(str(e)))
-        except requests.exceptions.HTTPError as e:
-            raise NetworkException("HTTP Error: {}".format(str(e)))
-        except requests.exceptions.Timeout as e:
-            raise NetworkException("Network Timeout: {}".format(str(e)))
+        except requests.exceptions.ConnectionError as exc:
+            raise NetworkException("Connection Error: {}".format(str(exc)))
+        except requests.exceptions.HTTPError as exc:
+            raise NetworkException("HTTP Error: {}".format(str(exc)))
+        except requests.exceptions.Timeout as exc:
+            raise NetworkException("Network Timeout: {}".format(str(exc)))
 
         tree = html.fromstring(page_content.content)
 

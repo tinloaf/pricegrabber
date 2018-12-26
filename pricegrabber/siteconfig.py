@@ -1,3 +1,7 @@
+"""Site configurations for pricegrabber.
+
+A site configuration describes how to scrape prices of one specific website."""
+
 import os
 import re
 import json
@@ -15,9 +19,9 @@ class SiteConfig(object):
         if 'url_regex' in self._data:
             try:
                 self._url_regex = re.compile(self._data['url_regex'])
-            except re.error as e:
+            except re.error as exc:
                 raise ConfigException("Regular expression {} is invalid: {}".format(
-                    self._data['url_regex'], str(e)))
+                    self._data['url_regex'], str(exc)))
 
         self._name = name_suggestion
         if 'name' in self._data:
@@ -33,7 +37,8 @@ class SiteConfig(object):
             self._get_rule = None
             if 'xpath' not in self._data:
                 raise ConfigException(
-                    "Site config has neither an 'xpath' nor an 'get_rule' entry.")
+                    "Site config has neither an 'xpath' nor " +
+                    "an 'get_rule' entry.")
 
             self._xpath = self._data['xpath']
 
@@ -41,27 +46,30 @@ class SiteConfig(object):
         if 'value_getters' in self._data:
             self._value_getters = []
             for vg_data in self._data['value_getters']:
-                if not 'regexp' in vg_data:
+                if 'regexp' not in vg_data:
                     raise ConfigException("Value getter has no regexp.")
                 vg_re_str = vg_data['regexp']
 
-                if not 'function' in vg_data:
+                if 'function' not in vg_data:
                     raise ConfigException("Value getter has no function.")
                 vg_func_str = vg_data['function']
 
                 try:
                     value_getter_func = eval(vg_func_str)
-                except Exception as e:
+                except Exception as exc:
                     raise ConfigException(
-                        "Value getter function specification '{}' is not valid Python code: {}".format(vg_func_str, str(e)))
+                        ("Value getter function specification '{}' is not"
+                         " valid Python code: {}").format(vg_func_str,
+                                                          str(exc)))
 
                 try:
                     self._value_getters.append(
                         (re.compile(vg_re_str), value_getter_func)
                     )
-                except re.error:
-                    raise ConfigException("Regular expression {} is invalid: {}".format(
-                        vg_re_str, str(e)))
+                except re.error as exc:
+                    raise ConfigException(("Regular expression {} is "
+                                           " invalid: {}")
+                                          .format(vg_re_str, str(exc)))
 
         self._currency_getters = None
         if 'currency_getters' in self._data:
@@ -78,9 +86,10 @@ class SiteConfig(object):
                 try:
                     self._currency_getters.append(
                         (re.compile(search_re_str), symbol))
-                except re.error as e:
+                except re.error as exc:
                     raise ConfigException(
-                        "Regular experession {} is invalid: {}".format(search_re_str, str(e)))
+                        "Regular experession {} is invalid: {}".format(
+                            search_re_str, str(exc)))
 
         self._fixed_currency = None
         if 'fixed_currency' in self._data:
@@ -89,25 +98,36 @@ class SiteConfig(object):
         self._tests = self._data.get("tests", [])
 
     def get_url_regex(self):
+        """Get the URL regex."""
         return self._url_regex
 
     def get_name(self):
+        """Get the name."""
         return self._name
 
     def get_xpath(self):
+        """Get the XPath, if any."""
         return self._xpath
 
     def get_get_rule(self):
+        """Get the get-rule, if any."""
         return self._get_rule
 
     def get_value_getters(self):
+        """Get the value getters, if any."""
         return self._value_getters
 
     def get_currency_getters(self):
+        """Get the currency getters, if any."""
         return self._currency_getters
 
     def get_fixed_currency(self):
+        """Get the fixed currency, if any."""
         return self._fixed_currency
+
+    def get_tests(self):
+        """Get a list of live tests for this site config."""
+        return self._tests
 
 
 class SiteConfigRepo(object, metaclass=Singleton):
@@ -120,7 +140,7 @@ class SiteConfigRepo(object, metaclass=Singleton):
     def _initialize(self, data_dir):
         self._site_configs = []
 
-        for root, dirs, files in os.walk(data_dir):
+        for root, _, files in os.walk(data_dir):
             for filename in files:
                 full_name = os.path.join(root, filename)
                 if full_name[-5:] == '.json':
@@ -132,4 +152,5 @@ class SiteConfigRepo(object, metaclass=Singleton):
                                 entry, name_suggestion=name_suggestion))
 
     def get_configs(self):
+        """Return all site configurations."""
         return self._site_configs
